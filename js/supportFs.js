@@ -15,7 +15,6 @@ function truncateTo(str, digits) {
 
 function encryptAndSave() {
     var passPhrase = document.getElementById("passPhraseID").value;
-    var secret_key = document.querySelector("#secretKeyID").value;
 
     var fileN = document.querySelector("#fileNameId").value;
     try {
@@ -24,16 +23,27 @@ function encryptAndSave() {
 
         var tempTxt = "";
         for (var i = 0; i < data.length; i++) {
-
             cp = CryptoJS.AES.encrypt(data[i][1], passPhrase);
             ctivslt = getCtIvSlt(cp);
 
             tempTxt += data[i][0] + ","; // key name
-            tempTxt += ctivslt[0] + ","; // encrypted key
+
+            if (data[i][4] == "" && data[i][5] == "") {
+                tempTxt += ctivslt[0] + ","; // encrypted key (previous iv and salt were not present...assuming its plain text)
+            } else {
+                tempTxt += data[i][1] + ","; // key that was previously encrypted (based on an iv and salt existing)
+            }
+
             tempTxt += data[i][2] + ","; // digits
             tempTxt += data[i][3] + ","; // period
-            tempTxt += ctivslt[1] + ","; // iv
-            tempTxt += ctivslt[2]; // salt
+            if (data[i][4] == "" && data[i][5] == "") {
+                tempTxt += ctivslt[1] + ","; // iv
+                tempTxt += ctivslt[2]; // salt
+            } else {
+                tempTxt += data[i][4] + ","; // iv from previous encryption
+                tempTxt += data[i][5]; // salt from previous encryption
+            }
+
             if (i < data.length - 1) {
                 tempTxt += "\r\n";
             }
